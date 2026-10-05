@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-base-700/60;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-base-950 text-ink-100 font-sans antialiased;
+    background-image: theme('backgroundImage.grid-glow');
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(63, 208, 255, 0.3);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.base.600');
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.base.500');
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply relative rounded-2xl border border-base-700/70 bg-base-850/70 shadow-card backdrop-blur-xl;
+  }
+
+  .glow-card {
+    @apply glass-card shadow-glow border-cyan-glow/30;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/60
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn text-base-950 bg-brand-gradient shadow-glow hover:brightness-110 active:brightness-95;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-300 bg-base-800/60 border border-base-600/70 hover:bg-base-700/60 hover:text-ink-100;
+  }
+
+  .btn-danger {
+    @apply btn text-red-300 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-400;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-base-600/70 bg-base-900/70 px-3.5 py-2.5 text-sm text-ink-100
+      placeholder:text-ink-500 outline-none transition-colors
+      focus:border-cyan-glow/60 focus:ring-1 focus:ring-cyan-glow/40;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-400
+      transition-colors hover:bg-base-800/70 hover:text-ink-100;
+  }
+
+  .sidebar-link.active {
+    @apply bg-base-800/90 text-ink-100 shadow-glow border border-cyan-glow/20;
+  }
+}
