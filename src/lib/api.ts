@@ -8,9 +8,10 @@ export const tokenStore = {
   set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
   clear: () => localStorage.removeItem(TOKEN_KEY),
 }
-
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.PROD
+    ? 'https://sky-desk-project-server.onrender.com/api'
+    : '/api',
 })
 
 api.interceptors.request.use((config) => {
