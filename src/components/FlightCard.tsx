@@ -3,6 +3,23 @@ import { ArrowRight, Clock3, PlaneTakeoff, Users } from 'lucide-react'
 import { clsx } from 'clsx'
 import type { FlightResponse } from '../types'
 import { formatDate, formatDuration, formatTime } from '../lib/format'
+import { findAirport } from '../lib/airports'
+
+/** "TLV · Israel"; just the code for airports missing from the client-side directory. */
+function AirportPlace({ code, align = 'left' }: { code: string; align?: 'left' | 'right' }) {
+  const country = findAirport(code)?.country
+  return (
+    <p className={clsx('text-xs text-ink-500', align === 'right' && 'text-right')}>
+      <span className="font-semibold text-ink-300">{code}</span>
+      {country && <span> · {country}</span>}
+    </p>
+  )
+}
+
+const placeName = (code: string) => {
+  const airport = findAirport(code)
+  return airport ? `${airport.city}, ${airport.country} (${code})` : code
+}
 
 export function FlightCard({ flight }: { flight: FlightResponse }) {
   const navigate = useNavigate()
@@ -12,6 +29,7 @@ export function FlightCard({ flight }: { flight: FlightResponse }) {
   return (
     <button
       onClick={() => navigate(`/flights/${flight.id}`)}
+      aria-label={`Flight ${flight.flightNumber} from ${placeName(flight.origin)} to ${placeName(flight.destination)} on ${formatDate(flight.departureTime)}, ${soldOut ? 'sold out' : `${flight.availableSeats} seats left`}. Open to choose a seat.`}
       className="glass-card group w-full rounded-2xl p-5 text-left transition-all hover:border-cyan-glow/40 hover:shadow-glow"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -43,7 +61,7 @@ export function FlightCard({ flight }: { flight: FlightResponse }) {
       <div className="mt-5 flex items-center gap-3">
         <div className="flex-1">
           <p className="text-lg font-bold leading-tight text-ink-100">{formatTime(flight.departureTime)}</p>
-          <p className="text-xs text-ink-500">{flight.origin}</p>
+          <AirportPlace code={flight.origin} />
         </div>
 
         <div className="flex flex-1 flex-col items-center px-2">
@@ -58,7 +76,7 @@ export function FlightCard({ flight }: { flight: FlightResponse }) {
 
         <div className="flex-1 text-right">
           <p className="text-lg font-bold leading-tight text-ink-100">{formatTime(flight.arrivalTime)}</p>
-          <p className="text-xs text-ink-500">{flight.destination}</p>
+          <AirportPlace code={flight.destination} align="right" />
         </div>
       </div>
 
@@ -72,6 +90,10 @@ export function FlightCard({ flight }: { flight: FlightResponse }) {
           ))}
         </div>
       </div>
+      <p className="mt-3 flex items-center justify-end gap-1 text-xs font-semibold text-cyan-glow">
+        {soldOut ? 'View flight' : 'Choose a seat'}
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      </p>
     </button>
   )
 }

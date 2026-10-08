@@ -1,126 +1,118 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Lock, LogIn, Mail, PlaneTakeoff } from 'lucide-react'
+import { Lock, LogIn, Mail } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { ApiError } from '../lib/api'
 import { Spinner } from '../components/ui/Spinner'
+import { AuthShell } from '../components/auth/AuthShell'
+import { FormAlert, FormField } from '../components/auth/FormField'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+interface LocationState {
+  from?: { pathname: string }
+  email?: string
+}
 
 export function LoginPage() {
-  const { login, isLoading } = useAuth()
+  const { login, isLoading, signOutReason } = useAuth()
   const { notify } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
+  const state = (location.state as LocationState | null) ?? {}
 
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(state.email ?? '')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
 
-  const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
+  const from = state.from?.pathname ?? '/'
+
+  const emailError = !email.trim()
+    ? 'Enter the email address you registered with.'
+    : !EMAIL_PATTERN.test(email.trim())
+      ? 'This doesn’t look like an email address (example: name@example.com).'
+      : null
+  const passwordError = !password ? 'Enter your password.' : null
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    setSubmitted(true)
     setError(null)
+    if (emailError || passwordError) return
+
     try {
-      await login({ email, password })
+      await login({ email: email.trim(), password })
       notify('Welcome back! You are now signed in.', 'success')
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
+      setError(err instanceof ApiError ? err : new ApiError('Something went wrong. Please try again.', 0))
     }
   }
 
-  return (
-    <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to manage your flights and bookings."
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="field-label">Email</label>
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
-            <input
-              type="email"
-              required
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="field-input pl-9"
-            />
-          </div>
-        </div>
+  const notRegistered = error?.status === 401 && /not registered/i.test(error.message)
 
-        <div>
-          <label className="field-label">Password</label>
-          <div className="relative">
-            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="field-input pl-9"
-            />
-          </div>
-        </div>
+  return (
+    <AuthShell title="Sign in" subtitle="Enter the email and password you used when you created your account.">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        {signOutReason && !error && <FormAlert kind="info">{signOutReason}</FormAlert>}
+
+        <FormField
+          label="Email address"
+          icon={Mail}
+          type="email"
+          autoComplete="email"
+          required
+          autoFocus
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="name@example.com"
+          error={submitted ? emailError : null}
+        />
+
+        <FormField
+          label="Password"
+          icon={Lock}
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Your password"
+          error={submitted ? passwordError : null}
+        />
 
         {error && (
-          <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-            {error}
-          </p>
+          <FormAlert>
+            <p>{error.message}</p>
+            {notRegistered && (
+              <p>
+                <Link to="/register" state={{ email }} className="font-semibold text-cyan-glow underline">
+                  Create an account with this email →
+                </Link>
+              </p>
+            )}
+          </FormAlert>
         )}
 
-        <button type="submit" disabled={isLoading} className="btn-primary w-full">
-          {isLoading ? <Spinner className="h-4 w-4 border-base-950/40 border-t-base-950" /> : <LogIn className="h-4 w-4" />}
-          Sign in
+        <button type="submit" disabled={isLoading} className="btn-primary w-full !py-3">
+          {isLoading ? (
+            <Spinner className="h-4 w-4 border-base-950/40 border-t-base-950" />
+          ) : (
+            <LogIn className="h-4 w-4" aria-hidden="true" />
+          )}
+          {isLoading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-ink-400">
-        New to SkyDesk?{' '}
+      <p className="mt-5 text-center text-sm text-ink-400">
+        Don’t have an account yet?{' '}
         <Link to="/register" className="font-semibold text-cyan-glow hover:underline">
-          Create an account
+          Create one – it’s free
         </Link>
       </p>
 
-      <div className="mt-6 rounded-xl border border-base-600/60 bg-base-900/60 p-3.5 text-xs text-ink-500">
-        <p className="mb-1 font-semibold text-ink-400">Demo accounts</p>
-        <p>Admin — admin@flightbooking.local / Admin123!</p>
-        <p>User — user@flightbooking.local / User123!</p>
-      </div>
     </AuthShell>
-  )
-}
-
-export function AuthShell({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string
-  subtitle: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
-            <PlaneTakeoff className="h-6 w-6 text-base-950" strokeWidth={2.4} />
-          </div>
-          <h1 className="text-2xl font-bold text-ink-100">{title}</h1>
-          <p className="mt-1.5 text-sm text-ink-400">{subtitle}</p>
-        </div>
-
-        <div className="glow-card rounded-2xl p-7">{children}</div>
-
-        <p className="mt-8 text-center text-sm text-ink-500">
-          Created and Engineered by <span className="font-bold text-ink-300">Miri Roth</span>
-        </p>
-      </div>
-    </div>
   )
 }

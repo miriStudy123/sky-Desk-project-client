@@ -56,7 +56,9 @@ export function SeatMap({ seats, selectedSeatId, onSelect }: SeatMapProps) {
                   type="button"
                   disabled={!isAvailable}
                   onClick={() => onSelect(seat)}
-                  title={`${row.rowNumber}${seat.seatLetter} · ${seat.status}`}
+                  title={`Seat ${row.rowNumber}${seat.seatLetter} · ${isSelected ? 'Selected' : isAvailable ? 'Available – click to select' : 'Occupied'}`}
+                  aria-label={`Seat ${row.rowNumber}${seat.seatLetter}, ${isSelected ? 'selected' : isAvailable ? 'available' : 'occupied'}`}
+                  aria-pressed={isSelected}
                   className={clsx(
                     'flex h-9 w-9 items-center justify-center rounded-lg border text-[11px] font-semibold transition-all',
                     i === aisleIndex && 'ml-6',
@@ -85,8 +87,8 @@ export function SeatMapLegend() {
   return (
     <div className="flex flex-wrap items-center gap-4 text-xs text-ink-400">
       <LegendItem className="border-cyan-glow/30 bg-cyan-glow/10" label="Available" />
-      <LegendItem className="border-violet-glow bg-violet-glow/25" label="Selected" />
-      <LegendItem className="border-base-600/60 bg-base-800/60" label="Occupied" />
+      <LegendItem className="border-violet-glow bg-violet-glow/25" label='Selected' />
+      <LegendItem className="border-base-600/60 bg-base-800/60" label='Occupied' />
     </div>
   )
 }

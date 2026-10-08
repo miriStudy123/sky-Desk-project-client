@@ -18,6 +18,22 @@
     min-height: 100vh;
   }
 
+  /* Visible keyboard focus everywhere, so people navigating with Tab always know where they are. */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid theme('colors.cyan.glow');
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   ::selection {
     background: rgba(63, 208, 255, 0.3);
   }

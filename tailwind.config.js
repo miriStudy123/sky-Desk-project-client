@@ -25,10 +25,15 @@ export default {
         },
         ink: {
           100: '#eef2fb',
+          200: '#d3daec',
           300: '#b7c1dc',
-          400: '#8b96b8',
-          500: '#6b7594',
+          400: '#9aa5c6',
+          // Lightened from #6b7594 so small helper text meets WCAG AA contrast on the dark background.
+          500: '#8590b0',
         },
+      },
+      spacing: {
+        4.5: '1.125rem',
       },
       boxShadow: {
         glow: '0 0 0 1px rgba(63,208,255,0.15), 0 0 24px -4px rgba(63,208,255,0.35)',

@@ -111,7 +111,7 @@ export function FlightDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="glass-card rounded-2xl p-6">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-ink-100">Choose your seat</h2>
+            <h2 className="text-base font-semibold text-ink-100">Step 1 · Choose your seat</h2>
             <SeatMapLegend />
           </div>
           {seats.length === 0 ? (
@@ -122,7 +122,7 @@ export function FlightDetailPage() {
         </div>
 
         <div className="glow-card sticky top-20 h-fit rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-ink-100">Booking summary</h3>
+          <h3 className="text-sm font-semibold text-ink-100">Step 2 · Review &amp; confirm</h3>
 
           {selected ? (
             <div className="mt-4 space-y-3">
@@ -148,7 +148,7 @@ export function FlightDetailPage() {
             </div>
           ) : (
             <p className="mt-4 text-sm text-ink-400">
-              Tap an available seat on the map to see your booking summary here.
+              Click any blue (available) seat on the map. Its details will appear here, together with the <strong className="text-ink-200">Confirm booking</strong> button.
             </p>
           )}
         </div>

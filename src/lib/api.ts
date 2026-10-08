@@ -33,6 +33,11 @@ export class ApiError extends Error {
   }
 }
 
+let onUnauthorized: (() => void) | null = null
+export const registerUnauthorizedHandler = (handler: () => void) => {
+  onUnauthorized = handler
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiProblem>) => {
@@ -43,20 +48,17 @@ api.interceptors.response.use(
       fieldErrors.join(' ') ||
       problem?.detail ||
       problem?.title ||
-      (status === 0 ? 'Cannot reach the server. Is the API running?' : error.message)
+      (status === 0
+        ? 'Cannot reach the server. Make sure the API is running (dotnet run) and try again.'
+        : error.message)
+
+    // A 401 from login/register only means "wrong credentials" - it must not end the current session.
+    // Anywhere else it means the saved token is no longer accepted, so sign the user out.
+    const isAuthCall = error.config?.url?.startsWith('/auth/') ?? false
+    if (status === 401 && !isAuthCall) {
+      onUnauthorized?.()
+    }
 
     return Promise.reject(new ApiError(message, status, problem?.correlationId))
   },
 )
-
-let onUnauthorized: (() => void) | null = null
-export const registerUnauthorizedHandler = (handler: () => void) => {
-  onUnauthorized = handler
-}
-
-api.interceptors.response.use(undefined, (error) => {
-  if (error instanceof ApiError && error.status === 401) {
-    onUnauthorized?.()
-  }
-  return Promise.reject(error)
-})

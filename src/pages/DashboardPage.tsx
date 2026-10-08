@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { CalendarClock, PlaneTakeoff, Search, Ticket, TrendingUp } from 'lucide-react'
+import { Armchair, CalendarClock, PlaneTakeoff, Search, Ticket, UserRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { bookingsApi, flightsApi } from '../lib/endpoints'
 import type { BookingResponse, FlightResponse } from '../types'
@@ -52,22 +52,24 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink-100">Welcome back, {user?.name?.split(' ')[0]}</h1>
+          <h1 className="text-2xl font-bold text-ink-100">Welcome, {user?.name?.split(' ')[0]}</h1>
           <p className="mt-1 text-sm text-ink-400">Here's what's happening with your travel.</p>
         </div>
         <Link to="/flights" className="btn-primary">
-          <Search className="h-4 w-4" />
-          Search flights
+          <Search className="h-4 w-4" aria-hidden="true" />
+          Book a flight
         </Link>
       </div>
+
+      {stats.total === 0 && <GettingStarted />}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={Ticket} label="Upcoming trips" value={String(stats.upcoming)} hint="Confirmed & scheduled" />
         <StatCard icon={CalendarClock} label="Total bookings" value={String(stats.total)} hint="All time" accent="violet" />
         <StatCard icon={PlaneTakeoff} label="Flights on offer" value={String(totalFlights)} hint="Across all routes" />
         <StatCard
-          icon={TrendingUp}
-          label="Account"
+          icon={UserRound}
+          label="Signed in as"
           value={isAdmin ? 'Admin' : 'Traveler'}
           hint={user?.email}
           accent="violet"
@@ -163,6 +165,45 @@ export function DashboardPage() {
         </div>
       )}
     </div>
+  )
+}
+
+const GUIDE_STEPS = [
+  { icon: Search, title: 'Find a flight', text: 'Open "Book a flight" and filter by origin, destination or date.', to: '/flights' },
+  { icon: Armchair, title: 'Choose a seat', text: 'Click a flight, then click any free (blue) seat on the seat map.' },
+  { icon: Ticket, title: 'Confirm', text: 'Press "Confirm booking". Your trip appears under "My bookings".', to: '/bookings' },
+]
+
+/** Shown until the first booking, so new users know exactly what to do next. */
+function GettingStarted() {
+  return (
+    <section aria-labelledby="getting-started" className="glow-card rounded-2xl p-6">
+      <h2 id="getting-started" className="text-base font-semibold text-ink-100">
+        Book your first flight in 3 steps
+      </h2>
+      <ol className="mt-4 grid gap-3 md:grid-cols-3">
+        {GUIDE_STEPS.map((step, i) => (
+          <li key={step.title} className="flex gap-3 rounded-xl border border-base-700/60 bg-base-900/60 p-4">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow/10 text-sm font-bold text-cyan-glow">
+              {i + 1}
+            </span>
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
+                <step.icon className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                {step.to ? (
+                  <Link to={step.to} className="hover:text-cyan-glow hover:underline">
+                    {step.title}
+                  </Link>
+                ) : (
+                  step.title
+                )}
+              </p>
+              <p className="mt-1 text-sm text-ink-400">{step.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   )
 }
 
